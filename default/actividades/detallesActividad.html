@@ -1,0 +1,954 @@
+<style>
+    /* CSS para aplicar negritas y color azul a las fechas disponibles */
+    .flatpickr-calendar .available-date {
+        color: #000000 !important; /* Color azul */
+        font-weight: bold !important; /* Negritas */
+    }
+
+    /* CSS para aplicar un aspecto oscuro a las fechas bloqueadas */
+    .flatpickr-calendar .disabled-date {
+        color: #909090 !important; /* Color de texto más claro */
+        cursor: not-allowed; /* Cambia el cursor */
+    }
+    
+</style>
+
+<!-- Center modal content -->
+<div class="modal fade" id="centermodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            
+            <div class="modal-body">
+                <div class="col-12" style="display: flex; flex-direction: column; align-items: center; justify-content: center;" id="spinner">
+                    <div class="spinner-border avatar-lg text-success m-2 spinner-cargando" role="status"></div>
+                    <h4 class="text-success spinner-cargando">Cargando actividad... ¡por favor espere!</h4>    
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->   
+
+<div>
+    <div id="actividad" style="display: none;">
+    </div>
+</div>
+
+
+<script>
+
+    var fechaActual = ""
+    var fechaInicio = ""
+    var fechaFin = ""
+    var idActividadGlobal = ""
+
+    $(document).ready(function() {
+        $("#centermodal").modal({
+            backdrop: 'static',
+            keyboard: false
+        }).modal('show')
+        fechaActual = obtenerFechaActual()
+        const fecha = new Date(fechaActual);
+        const ano = fecha.getFullYear();
+        const mes = fecha.getMonth() + 1;
+        fechaInicio = obtenerPrimerDiaDelMes(mes,ano)
+        fechaFin = obtenerUltimoDiaDelMes(mes,ano)
+        recibirInformacion()
+        feather.replace()
+        scrollInicio()
+
+    });
+
+
+    function iniciarCalendario(year, month, desabilitados, fechaDefault) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        flatpickr("#calendario", {
+            inline: true, // Mantiene el calendario siempre abierto
+            dateFormat: "Y-m-d", // Formato de fecha
+            minDate: startDate, // Establece la fecha mínima al primer día del mes
+            maxDate: endDate, // Establece la fecha máxima al último día del mes
+            defaultDate: fechaDefault,
+            onMonthChange: function(selectedDates, dateStr, instance) {
+                instance.changeMonth(startDate.getMonth());
+            },
+            onYearChange: function(selectedDates, dateStr, instance) {
+                instance.changeYear(startDate.getFullYear());
+            },
+            disable: desabilitados,
+            onDayCreate: function (dObj, dStr, fp, dayElem) {
+                const disabledDates = desabilitados;
+                const dateStr = dayElem.dateObj.toISOString().split('T')[0];
+                if (disabledDates.includes(dateStr)) {
+                    dayElem.classList.add('disabled-date'); // Añade clase a fechas bloqueadas
+                } else {
+                    dayElem.classList.add('available-date'); // Añade clase a fechas disponibles
+
+                }
+            }
+        });
+    }
+
+    
+
+    function getDisabledDates(mes, ano, civitatis) {
+        var fechasMesAnterior = obtenerMesAnterior(mes, ano)
+        var fechasMesDespues = obtenerMesDespues(mes, ano)
+        var fechasCiviTatis = obtenerCivitatis(mes, ano, civitatis)
+        var fechasDesabilitadas = fechasMesAnterior.concat(fechasMesDespues, fechasCiviTatis)
+        return fechasDesabilitadas
+    }
+
+
+    function obtenerMesAnterior(mes, ano){
+        const mesAnterior = mes - 1;
+            const anoAnterior = mes === 1 ? ano - 1 : ano
+            const primerDiaDelMesActual = new Date(ano, mes - 1, 1);
+            const ultimoDiaDelMesAnterior = new Date(ano, mes - 1, 0);
+            const fechaInicioAqui = new Date(ultimoDiaDelMesAnterior);
+            fechaInicioAqui.setDate(fechaInicioAqui.getDate() - 14);
+            const fechas = [];
+            for (let fecha = fechaInicioAqui; fecha <= ultimoDiaDelMesAnterior; fecha.setDate(fecha.getDate() + 1)) {
+                const ano = fecha.getFullYear();
+                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                const dia = String(fecha.getDate()).padStart(2, '0');
+                fechas.push(`${ano}-${mes}-${dia}`);
+            }
+            return fechas;
+    }
+
+
+    function obtenerMesDespues(mes,ano){
+        const primerDiaDelMesSiguiente = new Date(ano, mes, 1);
+            const ultimoDiaDelMesSiguiente = new Date(primerDiaDelMesSiguiente);
+            ultimoDiaDelMesSiguiente.setDate(primerDiaDelMesSiguiente.getDate() + 14);
+            const fechas = [];
+            for (let fecha = primerDiaDelMesSiguiente; fecha <= ultimoDiaDelMesSiguiente; fecha.setDate(fecha.getDate() + 1)) {
+                const ano = fecha.getFullYear();
+                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                const dia = String(fecha.getDate()).padStart(2, '0');
+                fechas.push(`${ano}-${mes}-${dia}`);
+            }
+            return fechas;
+    }
+
+
+
+    function obtenerCivitatis(mes, año, civitatis) {
+        const primerDiaDelMes = new Date(año, mes - 1, 1); // mes - 1 porque los meses en JavaScript son base 0
+        const ultimoDiaDelMes = new Date(año, mes, 0); // El último día del mes es el día 0 del siguiente mes
+        const todasLasFechasDelMes = [];
+        for (let fecha = new Date(primerDiaDelMes); fecha <= ultimoDiaDelMes; fecha.setDate(fecha.getDate() + 1)) {
+            const añoFecha = fecha.getFullYear();
+            const mesFecha = String(fecha.getMonth() + 1).padStart(2, '0');
+            const diaFecha = String(fecha.getDate()).padStart(2, '0');
+            todasLasFechasDelMes.push(`${añoFecha}-${mesFecha}-${diaFecha}`);
+        }
+        const civitatisFechas = new Set(civitatis); // Usar un Set para búsquedas rápidas
+        const fechasNoEnCivitatis = todasLasFechasDelMes.filter(fecha => !civitatisFechas.has(fecha));
+        return fechasNoEnCivitatis;
+    }
+    
+   
+
+    window.onpopstate = function(event) {
+        if (event.state && event.state.page === 'reserva') {
+            // Regresar a la búsqueda de vuelos cuando se hace clic en el botón "Atrás"
+            window.location.href = '#!/';
+        }
+    };
+
+
+    function goBack() {
+        // Regresar a la búsqueda de vuelos
+        window.location.href = '#!/actividades';
+    }
+
+
+    function scrollInicio() {
+        window.scrollTo(0, 0);
+    };
+
+
+    function obtenerFechaActual() {
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Los meses son 0-indexados
+        const día = String(hoy.getDate()).padStart(2, '0');
+        return `${año}-${mes}-${día}`;
+    }
+
+  
+
+    function recibirInformacion() {
+        const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+        const idActividad = urlParams.get('idActividad');
+        if (idActividad) {
+            const actividadDecoded = decodeURIComponent(idActividad);
+            const actividadObj = JSON.parse(actividadDecoded);
+            idActividadGlobal = actividadObj
+            verActividad()
+            setTimeout(function() {
+                mostrarCalendario()
+                }, 1000);
+            
+
+        } else {
+            console.log('ID del Vuelo no especificado');
+        }
+    }
+
+
+    function obtenerPrimerDiaDelMes(mes, ano) {
+        // Crear una fecha con el primer día del mes
+        let primerDia = new Date(ano, mes - 1, 1);
+        // Formatear la fecha al formato YYYY-MM-DD
+        let dia = primerDia.getDate();
+        let mesFormateado = (primerDia.getMonth() + 1).toString().padStart(2, '0');
+        let anoFormateado = primerDia.getFullYear();
+        return `${anoFormateado}-${mesFormateado}-${dia}`;
+    }
+
+
+    function obtenerUltimoDiaDelMes(mes, ano) {
+        // Crear una fecha con el primer día del mes siguiente y luego restar un día
+        let ultimoDia = new Date(ano, mes, 0);
+        let dia = ultimoDia.getDate();
+        let mesFormateado = (ultimoDia.getMonth() + 1).toString().padStart(2, '0');
+        let anoFormateado = ultimoDia.getFullYear();
+        return `${anoFormateado}-${mesFormateado}-${dia}`;
+    }
+
+
+    function borrarHorarioCostos(){
+        var lista = ""
+        lista = `<option value="">Eliga una fecha</option>`
+        $("#tiempos").html(lista)
+        $("#tiempos").prop("disabled", true); 
+        $("#horarios").css("display", "none");
+
+
+        lista = `<option value="">Eliga una tarifa</option>`
+        $("#tarifas").css("display", "none");
+        $("#listaTarifas").html(lista)
+        $("#listaTarifas").prop("disabled", true);
+        
+
+        lista = `<span> Eliga una fecha </span>`
+        $("#costos").css("display", "none");
+        $("#datosCostos").html(lista)
+        $("#botonReservar").hide();
+
+    }
+
+
+
+
+    function actualizarFechas(id){
+        borrarHorarioCostos()
+        flatpickr("#calendario", {
+            inline: false
+        });
+        var nuevaFecha = ""
+        if(id == 0){
+            nuevaFecha = sumarMes()
+        }else if(id == 1){
+            nuevaFecha = restarMes()
+        }
+        const fecha = new Date(nuevaFecha);
+        const ano = fecha.getFullYear();
+        const mes = fecha.getMonth()+2;
+        fechaInicio = obtenerPrimerDiaDelMes(mes, ano)
+        fechaFin = obtenerUltimoDiaDelMes(mes, ano)
+        mostrarCalendario()
+    }
+
+
+    function sumarMes(){   
+        let fechaObj = new Date(fechaInicio);
+        fechaObj.setMonth(fechaObj.getMonth() + 1);
+        let dia = fechaObj.getDate().toString().padStart(2, '0');
+        let mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0'); // Meses en JavaScript son indexados desde 0
+        let ano = fechaObj.getFullYear();
+        return `${ano}-${mes}-${dia}`;
+    }
+
+
+    function restarMes() {    
+        let fechaObj = new Date(fechaInicio);
+        fechaObj.setMonth(fechaObj.getMonth() - 1);
+        let dia = fechaObj.getDate().toString().padStart(2, '0');
+        let mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0'); // Meses en JavaScript son indexados desde 0
+        let ano = fechaObj.getFullYear();
+        return `${ano}-${mes}-${dia}`;
+    }
+
+
+    var auxGlobal = false
+    function armarCostos() {
+        auxGlobal = false
+        var tarifa = document.getElementById("listaTarifas").value;
+        datosConsulta[idDateReserva].rates.forEach(element => {
+            if(tarifa == element.id){
+                let palabra = element.categories[0].text.trim().split(' ');
+                if(palabra[0] == "Hasta"){
+                    armarSelect(element.categories)
+                    auxGlobal = true
+                }else{
+                    armarTabla(element.categories)
+                }
+                return
+            }
+        });
+    }
+
+
+
+    function armarSelect(categorias){
+        var lista = ""
+        lista += `<select class="form-select" id="selectCosto">`
+        categorias.forEach(element => {
+            lista += ` <option value="`+element.id+`">`+element.text+` --------- $`+element.price+`</option>`         
+        });
+        lista += `</select>`
+        $("#datosCostos").html(lista)
+        $("#costos").css("display", "block");
+    }
+
+
+
+    var categoriasGlobal = []
+    function armarTabla(categorias){
+        categoriasGlobal = []
+        lista = `
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="col-12 d-flex flex-column align-items-center justify-content-center">
+                                    Categoria
+                                </div>
+                            </th>
+                            <th>
+                                <div class="col-12 d-flex flex-column align-items-center justify-content-center">
+                                    Cantidad
+                                </div>
+                            </th>
+                            <th>
+                                <div class="col-12 d-flex flex-column align-items-center justify-content-center">
+                                    Total
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaCostos">
+                        
+                    </tbody>
+                </table>
+            </div>
+        `
+        $("#datosCostos").html(lista)
+        lista = ""
+        categorias.forEach((data, index) => {
+            lista += `
+                <tr>
+                    <th>
+                        <div class="col-12 d-flex flex-column align-items-center justify-content-center">
+                            <span><strong>`+data.text+`</strong></span>
+                            <span>$`+(data.price).toFixed(2)+`</span>
+                        </div>
+                    </th>
+                    <td>
+                        <div class="col-12">`
+                            let nuevaCategoria = {}
+                            if(index == 0){
+                                lista += `<input id="persona`+data.id+`" type="number" class="form-control" placeholder="#Adultos" aria-label="Last name" min="1" step="1" value="1" style="width:70px" onchange="actualizarCosto(`+data.id+`,`+data.price+`)">`
+                                nuevaCategoria = {
+                                    id: (data.id).toString(),
+                                    quantity: 1
+                                }
+                            }
+                            else{
+                                lista += `<input id="persona`+data.id+`" type="number" class="form-control" placeholder="#Adultos" aria-label="Last name" min="0" step="1" value="0" style="width:70px" onchange="actualizarCosto(`+data.id+`,`+data.price+`)">`
+                                nuevaCategoria = {
+                                    id: (data.id).toString(),
+                                    quantity: 0
+                                }
+                            }
+                            categoriasGlobal.push(nuevaCategoria)
+                            lista += `
+                        </div>
+                    </td>
+                    <td>
+                        <div class="col-12" id="costoSumarCategoria`+data.id+`">
+                            `
+                            if(index == 0){
+                                lista += `<span>$`+(data.price).toFixed(2)+`</span>`
+                                costosTotales[index] = data.price
+                            }
+                            else{
+                                lista += `<span>$0.00</span>`
+                                costosTotales[index] = 0
+                            }
+                            lista += `
+                        </div>
+                    </td>
+                </tr>
+                `
+        });
+        lista += `
+                <tr>
+                    <th></th>
+                    <td><strong>TOTAL</strong></td>
+                    <td id="costoTotal" class="col-12 d-flex flex-column align-items-center justify-content-center text-success"> 
+                        
+                    </td>
+                </tr>
+                `
+        
+        $("#listaCostos").html(lista)
+        $("#costos").css("display", "block");
+        calcularCostoTotal()
+    }
+
+
+
+
+    
+    function armarTarifas(element){
+        var aux = false
+        var lista = ""
+        element.forEach((tarifas,index) => {
+            if(tarifas.text){
+                aux = true
+                lista += `<option value=`+tarifas.id+`>`+tarifas.text+`</option>`
+            }
+        });
+        if(aux){
+            $("#tarifas").css("display", "block");
+            $("#listaTarifas").html(lista)
+            $("#listaTarifas").prop("disabled", false);
+            armarCostos()
+        }
+    }
+
+    var costosTotales = []
+    function calcularCostoTotal(){
+        let suma = costosTotales.reduce((acumulador, valorActual) => acumulador + valorActual, 0);
+        var lista = `<strong>$`+suma.toFixed(2)+`</strong>`
+        $("#costoTotal").html(lista)
+    }
+
+
+    function actualizarCosto(idAux, precio){
+        var id = idAux.toString()
+        var cantidad = document.getElementById("persona"+id).value;
+        var total = parseInt(cantidad)*parseInt(precio)
+        costosTotales[id] = total
+        categoriasGlobal.forEach(element => {
+            if(element.id == id){
+                element.quantity = parseInt(cantidad)
+            }
+        });
+        calcularCostoTotal()
+        var lista = `<span>$`+total+`</span>`
+        $("#costoSumarCategoria"+id).html(lista)
+    }
+
+
+    function armarCalendario(fechasCiviTatis){
+        const fecha = new Date(fechaInicio);
+        const ano = fecha.getFullYear();
+        const mes = fecha.getMonth() + 1; 
+        var desabilitados = getDisabledDates(mes,ano,fechasCiviTatis)
+        var fechaDefault = fechasCiviTatis[0]
+        iniciarCalendario(ano,mes, desabilitados, fechaDefault)
+        armarHorarioCosto()
+    }
+
+    var datosConsulta = []
+    function mostrarCalendario(){
+        $(".spinner-calendario").show()
+        $("#calendario").hide()
+        var fechasCiviTatis = []
+        Obtener_API_Vuelos(null, '/api/civitatis/calendario-actividad/'+idActividadGlobal+'?from='+fechaInicio+'&to='+fechaFin, datos => {
+            if (datos.estado) {
+                datos.consulta.schedule.forEach(element => {
+                    for (const disponible of element.times) {
+                        if (!disponible.quotaAvailable) {
+                            fechasCiviTatis.push(element.date);
+                            break; // Sale del bucle cuando se cumple la condición
+                        }
+                        else{
+                            if(element.availability > 0){
+                                fechasCiviTatis.push(element.date);
+                                break; // Sale del bucle cuando se cumple la condición
+                            }
+                        }
+                    }
+                });
+                datosConsulta = datos.consulta.schedule
+                armarCalendario(fechasCiviTatis)
+                $(".spinner-calendario").hide()
+                $("#calendario").show()
+            }
+            else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: datos.error
+                })
+            }
+
+        })
+    }
+
+
+    var idDateReserva = ""
+    function armarHorarioCosto(){
+        var fecha = document.getElementById("calendario").value 
+        datosConsulta.forEach((element, index) => {
+            if(element.date == fecha){
+                idDateReserva = index
+                $("#botonReservar").show();
+                capturarTiempos(element.times)
+                armarTarifas(element.rates)
+                return
+            }
+        });  
+    }
+
+
+
+    function capturarTiempos(element){
+        var aux = false
+        var lista = ""
+        element.forEach((horas,index) => {
+            if(horas.time){
+                aux = true
+                if(!horas.quotaAvailable){
+                    lista += `<option value="`+index+`">`+horas.time+`</option>`
+                }else{
+                    if(horas.availability>0 || horas.quota>0){
+                        lista += `<option value="`+index+`">`+horas.time+`</option>`
+                    }
+                    else{
+                        lista += `<option value="">No hay horario disponible</option>`
+                    }
+                }
+            }
+        });
+        if(aux){
+            $("#horarios").css("display", "block");
+            $("#tiempos").html(lista)
+            $("#tiempos").prop("disabled", false);
+        }
+    }
+
+
+    function hacerReserva(){
+        $("#centermodal").modal({
+            backdrop: 'static',
+            keyboard: false
+        }).modal('show')
+        let fecha = document.getElementById("calendario").value
+        let selectElement = document.getElementById("tiempos")
+        let hora = selectElement.options[selectElement.selectedIndex].text;
+        if(hora == "Eliga una fecha"){
+            hora = ""
+        }
+        let idTarifa = document.getElementById("listaTarifas").value
+        let cat = []
+        if(auxGlobal){
+            let nuevaCategoria = {
+                id: (document.getElementById("selectCosto").value).toString(),
+                quantity: ""
+            }
+            cat.push(nuevaCategoria)
+        }else{
+            categoriasGlobal.forEach((element, index) => {
+                if(!element.quantity == 0){
+                    cat.push(element)
+                }
+            });
+        }       
+        let date = {
+            activityId: parseInt(idActividadGlobal),
+            date: fecha,
+            rate: {
+                id: idTarifa.toString(),
+                categories: cat
+            },
+            time: hora
+        }
+        if(date){
+            var url = window.location.origin + window.location.pathname + "#!/carritoActividades"
+            $("#centermodal").modal('hide');
+            let carritoId = localStorage.getItem('carritoId');
+            let numItem = localStorage.getItem('numItem');
+            if(carritoId){
+                Enviar_API_Vuelos(JSON.stringify(date), '/api/civitatis/actividad/'+carritoId, datos => {
+                    $("#centermodal").modal('hide');
+                    if (datos.estado){
+                        numItem = parseInt(numItem) +1
+                        localStorage.setItem('numItem', numItem);
+                        window.location.href = url;
+                    }else{
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Los horarios seleccionados no estan disponibles, eliga otros',
+                            confirmButtonText: 'Entendido'
+                        })                        
+                    }
+
+                })
+            }else{
+                Enviar_API_Vuelos(JSON.stringify(date), '/api/civitatis/actividad', datos => {
+                    $("#centermodal").modal('hide');
+                    if (datos.estado){
+                        carritoId = datos.consulta.cartId
+                        localStorage.setItem('carritoId', carritoId);
+                        localStorage.setItem('numItem', 1);
+                        window.location.href = url;
+                    }else{
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Los horarios seleccionados no estan disponibles, eliga otros',
+                            confirmButtonText: 'Entendido'
+                        })
+                    }
+
+                })
+            }
+            
+        }
+        else{
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: "Error en la lectura de datos, intentelo nuevamente"
+            })
+            goBack()
+        }
+        
+    }
+
+    function verActividad(){
+        Obtener_API_Vuelos(null, '/api/civitatis/actividad-info/'+idActividadGlobal, datos => {
+            var aux = false
+            if (datos.estado) {
+                $("#centermodal").modal('hide');
+                $("#actividad").show()
+                var lista = ""
+                lista += `
+                <div class="row mb-3">
+                    <div class="col-10" style="display: flex; align-items: center;">
+                        <div class="page-title-box">
+                            <h1 class="page-title" style="font-size: 36px;"><strong>`+datos.consulta.title+`</strong></h1>
+                            <div style="display: flex;">
+                                <p class="text-success font-22" style="margin-right: 35px;"><strong>`+datos.consulta.score+`/10</strong></p>
+                                <p class="text-muted font-22">`+datos.consulta.reviews+` vistas | 600 viajeros</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="page-title-box" style="align-items: end; display: flex; justify-content: end; flex-direction: column;">
+                            <h2 class="page-title text-success" style="font-size: 45px;"><strong>$`+datos.consulta.originalPrice+`</strong></h2>
+                        </div>
+                    </div>
+                </div> 
+
+
+               
+                <!-- end row -->
+
+                <div class="row">
+                    <div class="col-lg-12 d-flex">
+                        <div class="col-lg-8">
+                            <div class="card mb-5">
+                                <div class="card-body">`
+                                    if((datos.consulta.photos.gallery).length > 1){
+                                        aux= true
+                                        lista +=`
+                                        <div id="carouselExampleIndicators" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+                                            <ol class="carousel-indicators">`
+                                                datos.consulta.photos.gallery.forEach((element,index) => {
+                                                    if(index == 0){
+                                                        lista += `<li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="`+index+`" class="active"></li>`
+                                                    }
+                                                    else{
+                                                        lista += `<li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="`+index+`"></li>`
+                                                    }
+                                                });
+                                                lista += 
+                                                `
+                                            </ol>
+                                            <div class="carousel-inner"  role="listbox">`
+                                                datos.consulta.photos.gallery.forEach((element,index) => {
+                                                    if(index == 0){
+                                                        lista += `
+                                                        <div class="carousel-item active">
+                                                            <img class="d-block img-fluid" src="`+element.paths.original+`" alt="Cargando foto..." style="width: 100%; height: 400px; object-fit: cover;">
+                                                        </div>
+                                                        `
+                                                    }
+                                                    else{
+                                                        lista += `
+                                                        <div class="carousel-item">
+                                                            <img class="d-block img-fluid" src="`+element.paths.original+`" alt="Cargando foto..." style="width: 100%; height: 400px; object-fit: cover;">
+                                                        </div>
+                                                        `
+                                                    }
+                                                });
+                                                lista += 
+                                                `
+                                            </div>
+                                            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Previous</span>
+                                            </a>
+                                            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Next</span>
+                                            </a>
+                                        </div>
+                                            `
+                                    }
+                                    else{
+                                        lista+=`
+                                        <div style="background-image: url('`+datos.consulta.photos.header[0].paths.original+`'); background-color: rgba(255, 255, 255, 0); background-blend-mode: overlay; background-position: center center; background-size: cover; height: 500px;">
+                                        </div>
+                                        `
+                                    }
+                                                       
+                                lista += `
+                                </div>
+                            </div>
+                            <div class="card mb-5">
+                                <div class="card-body">  
+                                    <h1 class="text-uppercase mt-0 mb-3">DESCRIPCIÓN</h1>
+                                    <hr style="border: none; border-top: 2px solid rgb(213, 213, 213); margin: 20px 0;">
+                                    <p class="font-18 text-muted">
+                                        `+datos.consulta.longDescription+`
+                                    </p>
+                                </div>
+                            </div>
+
+
+                            <div class="card">
+                                <div class="card-body">  
+                                    <h1 class="text-uppercase mt-0 mb-3">DETALLES</h1>
+                                    <hr style="border: none; border-top: 2px solid rgb(213, 213, 213); margin: 20px 0;">
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="clock" class="icon-lg"></i>  Duración:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16">`+(datos.consulta.duration.duration)/60+` horas </p>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="message-circle" class="icon-lg"></i>  Idioma:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16"> `
+                                                if(datos.consulta.lang == "es"){
+                                                    lista += "Español"
+                                                }
+                                                else if (datos.consulta.lang == "en"){
+                                                    lista += "Ingles"
+                                                }
+                                                else if (datos.consulta.lang == "it"){
+                                                    lista += "Italiano" 
+                                                }
+                                                else if (datos.consulta.lang == "fr"){
+                                                    lista += "Frances"
+                                                }
+                                                else if (datos.consulta.lang == "pt"){
+                                                    lista += "Portugues"
+                                                }
+                                                else{
+                                                    lista += datos.consulta.lang
+                                                }
+
+                                            lista += `</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="check" class="icon-lg"></i>  Incluido:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16"> 
+                                                <ul>`
+                                                datos.consulta.included.forEach(element => {
+                                                    lista += `<li>`+element+`</li>`
+                                                });
+
+                                    lista +=`   </ul>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="plus" class="icon-lg" style="transform: rotate(45deg); display: inline-block;"></i>  No incluido:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16">
+                                                <ul>`
+                                                datos.consulta.notIncluded.forEach(element => {
+                                                    lista += `<li>`+element+`</li>`
+                                                });
+
+                                    lista +=`   </ul>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="calendar"></i>  ¿Cuándo Reservar?:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16"> Puedes reservar hasta `+(datos.consulta.advance.minutes_before)/60+` horas antes de la actividad siempre que queden plazas. Reserva ya para asegurar tu plaza.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="file"></i>  Tipo de voucher:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16"> `
+                                                if(datos.consulta.voucherType == 0){
+                                                    lista += "Electrónica. Muestra el voucher en tu celular."
+                                                }
+                                                else{
+                                                    lista += datos.consulta.voucherType
+                                                }
+                                                lista += `</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="mb-2 font-16"><span class="fw-semibold me-2"><strong><i data-feather="x-circle"></i>  Accesibilidad:</span></strong></p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p class="mb-2 font-16"> `+datos.consulta.accessibility.description+`</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body"> 
+                                    <h5 class="text-uppercase mt-0 mb-3">DISPONIBILIDAD</h5>
+
+                                    <div class="row mb-5">
+                                        <div class="col-2">
+                                            <button type="button" class="btn btn-light" onclick="actualizarFechas('1');">
+                                                <i data-feather="arrow-left" class="icon-dual"></i>
+                                            </button>
+                                        </div>
+                                        <div class="col-8">
+                                            <div class="spinner-calendario" style="text-align: center;">                
+                                                <div class="spinner-border avatar-sm text-success m-2" role="status"  id="spinner"></div>
+                                                <h4 class="text-success" >Cargando disponibilidad</h4>
+                                            </div>
+                                            <input type="text" id="calendario" class="form-control" placeholder="Eliga un día de su preferencia" readonly onchange="armarHorarioCosto()">
+                                        </div>
+                                        <div class="col-2">
+                                            <button type="button" class="btn btn-light" onclick="actualizarFechas('0');">
+                                                <i data-feather="arrow-right" class="icon-dual"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-5" id="horarios" style="display: none;">
+                                        <div class="col-12">
+                                            <i class="dripicons-clock" style="font-size: 20px; margin-right: 10px;"></i>
+                                            <span><strong>
+                                                Horarios
+                                            </strong></span>
+                                            <select class="form-select" id="tiempos" disabled>
+                                                <option value="">Eliga una fecha</option>
+                                            </select> 
+                                        </div>                            
+                                    </div>
+                                    <div class="row mb-5" id="tarifas" style="display: none;">
+                                        <div class="col-12">
+                                            <i class="dripicons-user-group" style="font-size: 20px; margin-right: 10px;"></i>
+                                            <span><strong>
+                                                Tipo de Tarifas
+                                            </strong></span>
+                                            <select class="form-select" id="listaTarifas" disabled onchange="armarCostos()">
+                                                <option value="">Eliga una tarifa</option>
+                                            </select> 
+                                        </div>                            
+                                    </div>
+
+                                    <div class="row mb-5" id="costos" style="display: none;">
+                                        <div class="col-12 mb-2">
+                                            <i class="dripicons-card" style="font-size: 20px; margin-right: 10px;"></i>
+                                            <span><strong>
+                                                Costos
+                                            </strong></span>
+                                        </div>
+
+                                        <div class="col-12" id="datosCostos">
+                                            <span>
+                                                Eliga una fecha
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-5">
+                                        </div>
+                                        <div class="col-4">
+                                            <button style="display: none;" id="botonReservar" type="submit" class="btn btn-success" onclick="hacerReserva();">Reservar</button>
+                                        </div>
+                                        <div class="col-3">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+                $("#actividad").html(lista)
+                feather.replace()
+                if(aux){
+                    var myCarousel = new bootstrap.Carousel(document.getElementById('carouselExampleIndicators'), {
+                        interval: 5000, // Cambia la imagen cada 2 segundos
+                        ride: 'carousel'
+                    });
+                    setTimeout(function() {
+                        document.querySelector('#carouselExampleIndicators .carousel-control-next').click();
+                    }, 5000);
+                }
+            }
+            else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: datos.error
+                })
+            }
+
+        })
+
+    }
+
+   
+
+</script>
+

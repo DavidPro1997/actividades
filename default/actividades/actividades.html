@@ -1,0 +1,273 @@
+<div class="background-container" style="background-image: url('../../assets/images/destinos/buscadorFondo.jpg');
+ position: relative; height: 500px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="col-12">
+        <div class="page-title-box" style="align-items: center; display: flex; justify-content: center; flex-direction: column;">
+            <h2 class="page-title" style="font-size: 36px; color: white; line-height: 1.2;">Visitas guiadas y excursiones<br>en español por todo el mundo</h2>
+        </div>
+    </div>
+    <br><br>
+    <div class="col-12 d-flex">
+        <div class="col-3"></div>
+        <div class="col-6 d-flex">
+            <div class="dropdown" style="width: 100%;">
+                <input type="text" id="destino" placeholder="Escriba un destino de su preferencia..." class="form-control dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" autocomplete="off" data-bs-display="static" oninput="buscadorDestinos(event)">
+                <div class="dropdown-menu" style="width: 100%;">
+                    <div id="spinnerContenido" style="text-align: center; display: none;">                
+                        <div class="spinner-border avatar-lg text-success m-2" role="status"></div>
+                    </div>
+                    <div id="buscadorContenido" style="display: none;">
+                        <div>
+                            <h6 class="dropdown-header text-success" style="font-size: 20px;">
+                                <i class="fas fa-building"></i>
+                                Destinos</h6>
+                            <div class="row" id="listaDestinos">
+                            </div>
+                        </div>
+                        <hr style="border: none; border-top: 2px solid rgb(213, 213, 213); margin: 20px 0;">
+                        <div>
+                            <h6 class="dropdown-header text-success" style="font-size: 20px;">
+                                <i class=" fas fa-running"></i>
+                                Actividades</h6>
+                            <div class="row" id="listaActividades">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="defaultContenido" class="text-center">
+                        <h6 class="dropdown-header text-success" style="font-size: 20px;">
+                            <i class="fas fa-plane-arrival"></i>
+                            ¡Bienvenido!
+                        </h6>
+                        <br>
+                        <p>
+                            Descubre actividades, recomendaciones y secretos locales para hacer de tu viaje algo único. ¡Tu próxima aventura comienza aquí!
+                            <br><br>
+                            Ingresa tu destino...
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-1"></div>
+    </div>
+</div>
+
+<br>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box" style="align-items: center; display: flex; justify-content: center; flex-direction: column;">
+            <h2 class="page-title" style="font-size: 36px;">Principales Destinos</h2>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card bg-pattern">
+            <div class="card-body">
+                <div class="text-center">
+                    <img src="../assets/images/destinos/new-york.jpg" alt="logo" class="avatar-xxl rounded mb-2" style="width: 100%; height: 200px;">
+                    <h4 class="mb-1 font-20">Nueva York</h4>
+                    <p class="text-muted  font-14">Estados Unidos</p>
+                </div>
+                <div class="text-center">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-success">Ver Destino</a>
+                </div>
+
+                <div class="row mt-4 text-center">
+                    <div class="col-6">
+                        <h5 class="fw-normal text-muted">Actividades</h5>
+                        <h4>105</h4>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="fw-normal text-muted">Viajeros</h5>
+                        <h4>566k</h4>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- end card -->
+    </div><!-- end col -->
+
+    <div class="col-lg-4">
+        <div class="card bg-pattern">
+            <div class="card-body">
+                <div class="text-center">
+                    <img src="../assets/images/destinos/roma.jpg" alt="logo" class="avatar-xxl rounded mb-2" style="width: 100%; height: 200px;">
+                    <h4 class="mb-1 font-20">Roma</h4>
+                    <p class="text-muted  font-14">Italia</p>
+                </div>
+                <div class="text-center">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-success">Ver Destino</a>
+                </div>
+
+                <div class="row mt-4 text-center">
+                    <div class="col-6">
+                        <h5 class="fw-normal text-muted">Actividades</h5>
+                        <h4>130</h4>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="fw-normal text-muted">Viajeros</h5>
+                        <h4>47k</h4>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- end card -->
+    </div><!-- end col -->
+
+    <div class="col-lg-4">
+        <div class="card bg-pattern">
+            <div class="card-body">
+                <div class="text-center">
+                    <img src="../assets/images/destinos/paris.jpg" alt="logo" class="avatar-xxl rounded mb-2" style="width: 100%; height: 200px;">
+                    <h4 class="mb-1 font-20">Paris</h4>
+                    <p class="text-muted  font-14">Francia</p>
+                </div>
+
+                <div class="text-center">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-success">Ver Destino</a>
+                </div>
+
+                <div class="row mt-4 text-center">
+                    <div class="col-6">
+                        <h5 class="fw-normal text-muted">Actividades</h5>
+                        <h4>52</h4>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="fw-normal text-muted">Viajeros</h5>
+                        <h4>72k</h4>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- end card -->
+    </div><!-- end col -->
+</div>
+<!-- end row -->
+
+
+
+<script>
+
+    $(document).ready(function() {
+        feather.replace();
+    })
+
+    var proteccion = true
+    function buscadorDestinos(event){
+        $("#spinnerContenido").show()
+        $("#defaultContenido").hide()
+        $("#buscadorContenido").hide()
+        
+        setTimeout(function() {
+            let textoIngresado = document.getElementById("destino").value;
+            let numero = parseInt(textoIngresado.length)
+            if(numero > 3 && proteccion){
+                proteccion = false
+                mostrarDestinos(textoIngresado)
+            }        
+        }, 2000);
+        
+    }
+
+    function elegirDestino(event) {
+        event.preventDefault();
+        const destino = event.target.closest('.dropdown-item').querySelector('strong').textContent;
+        console.log(destino); 
+        document.getElementById("destino").value = destino
+    }
+
+
+    function mostrarDestinos(buscador){
+        proteccion = false
+        if(buscador == 0){
+            buscador = document.getElementById("destino").value
+        }
+        Obtener_API_Vuelos(null, '/api/civitatis/buscador?parametro='+buscador, datos => {
+            var destinos = []
+            var actividades = []
+            if (datos.estado) {
+                proteccion = true
+                datos.consulta.forEach((element, index) => {
+                    let existe = destinos.some(aux => aux.id === element.destinationId)
+                    if(!existe && destinos.length<6){
+                        let nuevoDestino = {
+                            id: element.destinationId,
+                            ciudad: element.city,
+                            pais: element.country
+                        }
+                        destinos.push(nuevoDestino)
+                    }
+                    if(index<6){
+                        let nuevaActividad = {
+                            id: element.id,
+                            titulo: element.title,
+                            ciudad: element.city,
+                            pais: element.country
+                        }
+                        actividades.push(nuevaActividad)
+                    }
+                });
+                armarDestinos(destinos)
+                armarActividades(actividades)
+                $("#spinnerContenido").hide()
+                $("#defaultContenido").hide()
+                $("#buscadorContenido").show()  
+            }
+            else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: datos.error
+                })
+            }
+
+        })
+    }
+
+
+    function armarDestinos(destinos){
+        var lista = ""
+        destinos.forEach((element, index) => {
+            lista += `
+                    <div class="col-lg-6">
+                        <a class="dropdown-item" href="#" onclick="irDestino(`+element.id+`);return false;"><strong>`+element.ciudad+`</strong> <span class="text-muted" style="font-size: small;">`+element.pais+`</span></a>
+                    </div>
+            `
+           
+                $("#listaDestinos").html(lista)
+                return
+                
+        });
+    }
+
+    function armarActividades(actividades){
+        var lista = ""
+        actividades.forEach((element, index) => {
+            lista += `
+                    <div class="col-lg-12">
+                        <a class="dropdown-item" href="#" onclick="irActividad(`+element.id+`);return false;"><strong>`+element.titulo+`</strong> <span class="text-muted" style="font-size: small;">`+element.ciudad+` - `+element.pais+`</span></a>
+                    </div>
+            `
+            if(index == 5){
+                $("#listaActividades").html(lista)
+                return
+            }       
+        });
+    }
+    
+
+    function irDestino(id) {
+        var destinoString = JSON.stringify(id)
+        var destinoEncode = encodeURIComponent(destinoString)
+        var url = window.location.origin + window.location.pathname + "#!/destino?idDestino=" + encodeURIComponent(destinoEncode);
+        window.location.href = url;
+    }
+
+    function irActividad(id) {
+        var actividadString = JSON.stringify(id)
+        var actividadEncode = encodeURIComponent(actividadString)
+        var url = window.location.origin + window.location.pathname + "#!/detallesActividad?idActividad=" + encodeURIComponent(actividadEncode);
+        window.location.href = url;
+    }
+
+
+</script>
+

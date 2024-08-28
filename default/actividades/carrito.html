@@ -1,0 +1,747 @@
+<!-- Center modal content -->
+<div class="modal fade" id="centermodal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            
+            <div class="modal-body">
+                <div class="col-12" style="display: flex; flex-direction: column; align-items: center; justify-content: center;" id="spinner">
+                    <div class="spinner-border avatar-lg text-success m-2 spinner-cargando" role="status"></div>
+                    <h4 class="text-success spinner-cargando">Cargando su carrito... ¡por favor espere!</h4>    
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal --> 
+
+<div class="row mb-3">
+    <div class="col-10" style="display: flex; align-items: center;">
+        <div class="page-title-box">
+            <h1 class="page-title" style="font-size: 36px;"><strong>MI CARRITO</strong></h1>
+        </div>
+    </div>
+</div> 
+<div class="row mb-4" style="background-color: white;">
+    <div class="col-4 d-flex align-items-center justify-content-center" style="height: 40px;" id="tuPedido">
+        <i class="dripicons-tags" style="font-size: 24px; margin-right: 10px;"></i>
+        <span class="d-none d-sm-inline">Revisa tu pedido</span>
+    </div>
+    <div class="col-4 d-flex align-items-center justify-content-center" style="height: 40px;" id="datosPersonales">
+        <i class="dripicons-user-id" style="font-size: 24px; margin-right: 10px;"></i>
+        <span class="d-none d-sm-inline">Datos Personales</span>
+    </div>
+    <div class="col-4 d-flex align-items-center justify-content-center" style="height: 40px;" id="metodoPago">
+        <i class="dripicons-wallet" style="font-size: 24px; margin-right: 10px;"></i>
+        <span class="d-none d-sm-inline">Resumen</span>
+    </div>
+</div>
+<div class="row" id="cuerpoPedido" style="display: none;">
+    <div class="col-md-8" id="listaItems">
+        
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row" style="height: 130px;" id="precios">
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-success" style="height: 60px; width: 150px;" onclick="irDestino();">Añadir mas actividades</button>
+            </div>
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-success" style="height: 60px; width: 150px;" onclick="irDatosPersonales();">Continuar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="cuerpoPersonales" style="display: none;">
+    <div class="col-md-8" id="resumen">
+        
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title">Datos de facturación</h4>
+                <p class="sub-header">Su reserva se guardará con sus datos de facturación</p>
+
+                <form id="datosFactura">
+                </form>
+
+            </div> <!-- end card-body-->
+        </div> <!-- end card-->
+        <div class="card">
+            <div class="card-body" id="costos">
+                
+            </div> <!-- end card-body-->
+        </div> <!-- end card-->
+        <div class="row">
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-success" style="height: 60px; width: 150px;" onclick="cambiarItem(0);">Volver a Revisar mi Pedido</button>
+            </div>
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-success" style="height: 60px; width: 150px;" onclick="enviarDatosReserva();">Continuar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="cuerpoPago" style="display: none;">
+    <div class="col-md-8" id="resumenReserva">
+        
+    </div>
+    <div class="col-md-4">
+        <div class="row" id="resumenCostos">
+        
+        </div>
+        <div class="row">
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-success" style="height: 60px; width: 150px;" onclick="cambiarItem(1);">Volver a Datos Personales</button>
+            </div>
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-success" style="height: 60px; width: 150px;" onclick="reservar();">Reservar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    $(document).ready(e => {
+        abrirModal()
+        setTimeout(() => recibirInformacion(), 10000);
+        cambiarItem(0)
+    })
+
+
+    function reservar(){
+        // /api/civitatis/reservar/{{idCart}}
+        let carritoId = localStorage.getItem('carritoId');
+        Obtener_API_Vuelos(null, '/api/civitatis/reservar/'+carritoId, datos => {
+            if (datos.estado) {
+              
+            }
+            else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops..',
+                    text: datos.error
+                })
+            }
+        })
+    }
+
+
+    function armarResumen(items){
+        var lista = ""
+        items.forEach((element, index) => {
+            lista += `
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-3" >
+                        </div>
+                        <div class="col-9">
+                            <div class="row">
+                                <h3 class="card-title mb-3">`+element.activity.title+`</h3>
+                                <div class="col-12">
+                                    <span style="font-size: 18px;"><strong>Fecha: </strong>`+element.date+`</span> 
+                                </div>
+                                `
+                                var cantidad = 0
+                                element.rate.categories.forEach(cat => {
+                                    cantidad = cantidad + parseInt(cat.quantity)
+                                });
+                                lista +=`
+                                <div class="col-12">
+                                    <span style="font-size: 16px;">`+element.rate.rate+` | `+cantidad+` personas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
+        });
+        $("#resumenReserva").html(lista)
+    }
+
+
+    function armarResumenCostos(precioTotal){
+        var lista = ""
+        lista = `
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12 d-flex align-items-center justify-content-center">
+                    <h4>PRECIO TOTAL</h4>
+                </div>
+                <div class="col-12 d-flex align-items-center justify-content-center">
+                    <h2><strong>$`+precioTotal.toFixed(2)+`</strong></h2>
+                </div>
+                <div class="col-12 d-flex align-items-center justify-content-center">
+                    <p><strong>Verifique toda la información antes de realizar la reserva</strong></p>
+                </div>
+            </div>
+        </div>
+                `
+        $("#resumenCostos").html(lista)
+    }
+
+
+    function exitoReserva(){
+        Swal.fire({
+            icon: 'success',
+            title: 'Exito',
+            text: 'La reserva se ha realizado correctamente'
+        })
+        var url = window.location.origin + window.location.pathname + "#!/actividades"
+        window.location.href = url;
+    }
+
+
+    function enviarDatosReserva(){
+        let carritoId = localStorage.getItem('carritoId');
+        validarDatosFacturacion()
+        validarDatos()
+        Modificar_API((datosReserva),'/api/civitatis/checkout/'+carritoId, datos => {
+            if (datos.estado){
+                cambiarItem(2)
+                armarResumen(datos.consulta.items)
+                armarResumenCostos(datos.consulta.prices.USD)
+            }else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: datos.error
+                })
+            }
+        })
+    }
+
+
+
+    function validarDatosFacturacion(){
+        let cliente = datosReserva.customer
+        Object.entries(cliente).forEach(([key, value]) => {
+            let valor = document.getElementById("id"+traducirPalabra(key)).value
+            cliente[key] = valor
+        });
+    }
+
+
+
+    function validarDatos(){
+        datosReserva.items.forEach(element => {
+            if(element.details.booking){
+                validarDatosBooking(element.details.booking)
+            }
+            if(element.details.passengers){
+                validarDatosPasajeros(element.details.passengers)
+            }
+        });
+    }
+
+    function validarDatosBooking(reserva){
+        reserva.forEach(element => {
+            let id = removerPuntos(element.id)
+            element.value = document.getElementById(id).value
+        });
+    }
+
+    function validarDatosPasajeros(pasajeros){
+        pasajeros.forEach(element => {
+            let id = removerPuntos(element.id)
+            element.value = document.getElementById(id).value
+        });
+
+    }
+
+
+
+
+    var datosReserva = {
+        customer: "",
+        items: ""
+    }
+    function irDatosPersonales(){
+        abrirModal()
+        let carritoId = localStorage.getItem('carritoId');
+        cambiarItem(1)
+        Obtener_API_Vuelos(null, '/api/civitatis/checkout/'+carritoId, datos => {
+            if (datos.estado) {
+                datosReserva.customer = datos.consulta.customer
+                datosReserva.items = datos.consulta.items
+                construirDatosFactura(datos.consulta.customer)
+                construirDatosPasajeros(datos.consulta.items)
+                construirCostoTotal(datos.consulta.amounts)
+                cerrarModal()
+            }
+            else{
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Aviso',
+                    text: datos.error
+                })
+                cerrarModal()
+            }
+        })
+        cerrarModal()
+
+    }   
+
+
+
+    function construirCostoTotal(precios){
+        let aux = false
+        var lista = ""
+        lista += `
+                <h4 class="header-title">TOTAL A PAGAR:</h4>
+                <p class="sub-header">Su total a pagar es:</p>
+                <div class="row" style="height: 130px;">`
+        precios.forEach(element => {
+            if(element.USD){
+                aux = true
+                lista += 
+                    `<div class="col-6 d-flex align-items-center justify-content-center">
+                        <h4>PRECIO TOTAL</h4>
+                    </div>
+                    <div class="col-6 d-flex align-items-center justify-content-center">
+                        <h2><strong>$`+(element.USD).toFixed(2)+`</strong></h2>
+                    </div>
+                `
+            }
+        });
+        if(!aux){
+            lista += 
+                `<div class="col-12 d-flex align-items-center justify-content-center">
+                    <h3 class="text-success">GRATIS</h3>
+                </div>
+                <div class="col-12">
+                    <h4>Importante: </h4>
+                    <h5>Verifique todos los datos. Al dar en continuar, se realizará la reserva</h5>
+                </div>
+            `
+            }
+        lista += `</div>`
+        
+        $("#costos").html(lista)
+    }
+
+
+
+
+
+
+    function construirDatosPasajeros(items){
+        items.forEach((element, index) => {
+            if(element.details.booking){
+                armarbooking(element.details.booking, element.id)
+            }
+            if(element.details.passengers){
+                armarPasajeros(element.details.passengers, element.id)
+            }
+        });
+
+    }
+
+
+
+    function removerPuntos(cadena) {
+        return cadena.replace(/\./g, '__');
+    }
+
+    function revertirDobleGuionBajo(cadena) {
+        return cadena.replace(/__+/g, '.'); // Usar + para manejar más de dos guiones bajos si hay casos complejos
+    }
+
+
+    function obtenerTerceraPosicion(cadena) {
+        const partes = cadena.split('-');
+        if (partes.length >= 3) {
+            return partes[2];
+        } else {
+            return null; 
+        }
+    }
+
+
+    function armarPasajeros(pasajeros, id){
+        let aux = removerPuntos(id)
+        let contador = 0
+        var lista = '<h4>Detalles Pasajeros</h4>'
+        pasajeros.forEach((element, index) => {
+            let idLabel = removerPuntos(element.id)
+            if(obtenerTerceraPosicion(idLabel) == contador){
+                contador = contador +1 
+                if(contador == 1){
+                    lista += `<br><br><br><h5>Pasajero `+contador+`</h5>`
+                }else{
+                    lista += `<br><br><br><br><br><h5>Pasajero `+contador+`</h5>`
+                }
+            }
+            lista += `
+            <div class="col-6 mb-3">
+                <label for="" class="form-label">`+element.label+`</label>
+                <input type="`+element.type+`" class="form-control" id="`+idLabel+`" placeholder="`+element.label+`"`
+                if(element.required){
+                    lista += ` required />` 
+                }
+                else{
+                    lista += ` />`
+                }
+               lista += `
+            </div>
+            `
+        });
+        $("#pasajeros"+aux).html(lista)
+
+    }
+
+
+
+    function armarbooking(booking, id){
+        let aux = removerPuntos(id)
+        var lista = "<h4>Detalles de Reserva</h4>"
+        booking.forEach(element => {
+            let idLabel = removerPuntos(element.id)
+            lista += `
+            <div class="mb-3">
+                <label for="" class="form-label">`+element.labelTranslated+`</label>
+                <input type="`+element.type+`" class="form-control" id="`+idLabel+`" placeholder="`+element.labelTranslated+`"`
+                if(element.required){
+                    lista += ` required />` 
+                }
+                else{
+                    lista += ` />`
+                }
+               lista += `
+            </div>
+            `
+        });
+        $("#booking"+aux).html(lista)
+
+    }
+
+
+
+    function traducirPalabra(palabra) {
+        const diccionario = {
+            "email":"Correo Electrónico",
+            "phone": "Teléfono",
+            "prefix": "Prefijo",
+            "firstName":"Nombre",
+            "lastName":"Apellido",
+        };
+        return diccionario[palabra] || palabra;
+    }
+
+
+
+    function construirDatosFactura(cliente){
+        var lista = ""
+        Object.entries(cliente).forEach(([key, value]) => {
+            lista += `
+            <div class="mb-3">
+                <label for="validationCustom01" class="form-label">`+traducirPalabra(key)+`</label>
+                <input type="text" class="form-control" id="id`+traducirPalabra(key)+`" placeholder="Ingrese el `+traducirPalabra(key)+`" required />
+            </div>
+            `
+            $("#datosFactura").html(lista)
+        });
+    }
+
+
+
+    var idDestino = ""
+    function irDestino(){
+        var destinoString = JSON.stringify(idDestino)
+        var destinoEncode = encodeURIComponent(destinoString)
+        var url = window.location.origin + window.location.pathname + "#!/destino?idDestino=" + encodeURIComponent(destinoEncode);
+        window.location.href = url;
+    }
+
+
+    function recibirInformacion(){
+        let carritoId = localStorage.getItem('carritoId');  
+        if(carritoId){
+            mostrarCarrito(carritoId)
+        }
+        else{
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: "No tiene un carrito creado."
+            })
+            window.history.back();
+        }
+    }
+
+
+    function cerrarModal(){
+        $("#centermodal").modal('hide');
+    }
+
+    function abrirModal(){
+        $("#centermodal").modal({
+            backdrop: 'static',
+            keyboard: false
+        }).modal('show')
+    }
+
+
+    function mostrarCarrito(idCarrito){
+        let numItem = localStorage.getItem('numItem');
+        Obtener_API_Vuelos(null, '/api/civitatis/carrito/'+idCarrito, datos => {
+            if (datos.estado) {
+                if(numItem == datos.consulta.items.length){
+                    cerrarModal()
+                    contruirItems(datos.consulta.items, datos.consulta.cartId)
+                    construirPrecio(datos.consulta.prices.USD)
+                }
+                else{
+                    console.log("Aun no se actualiza")
+                    setTimeout(() => mostrarCarrito(idCarrito), 5000);
+                }
+            }
+            else{
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Aviso',
+                    text: "No hay items en su carrito, elija una actividad"
+                }).then(e => {
+                    localStorage.setItem('carritoId', '');
+                    localStorage.setItem('numItem', 0);
+                    window.history.back();
+                    cerrarModal()
+                 })
+
+            }
+        })
+    }
+
+
+    function construirPrecio(precioTotal){
+        var lista = ""
+        lista = `
+                <div class="col-6 d-flex align-items-center justify-content-center">
+                    <h4>PRECIO TOTAL</h4>
+                </div>
+                <div class="col-6 d-flex align-items-center justify-content-center">
+                    <h2><strong>$`+precioTotal.toFixed(2)+`</strong></h2>
+                </div>
+                `
+        $("#precios").html(lista)
+    }
+
+
+
+    function eliminarActividad(carritoId,itemId){
+        if(carritoId && itemId){
+            abrirModal()
+            Eliminar_API('/api/civitatis/actividad/'+carritoId+'/'+encodeURIComponent(itemId), datos => {
+                if (datos.estado) {
+                    let numItem = localStorage.getItem('numItem');
+                    numItem = parseInt(numItem) -1
+                    localStorage.setItem('numItem', numItem);
+                    if(numItem == 0){
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Aviso',
+                            text: "No hay items en su carrito, elija una actividad"
+                        }).then(e => {
+                            localStorage.setItem('carritoId', '');
+                            localStorage.setItem('numItem', 0);
+                            window.history.back();
+                            cerrarModal()
+                        })
+                    }else{
+                        setTimeout(() => mostrarCarrito(carritoId), 10000);
+                    }             
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: datos.error
+                    })
+                }
+            })
+
+        }
+        else{
+            console.log("Variables indefinidas: ")
+            console.log(carritoId+' '+ itemId)
+        }
+        
+    }
+
+
+
+    function contruirItems(items, carritoId){
+        var lista = ""
+        items.forEach((element, index) => {
+            idDestino = element.details.destinationId
+            lista += `
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-widgets">
+                        <a href="#" data-toggle="remove" onclick="eliminarActividad('${carritoId}','${element.itemId}'); return false;"><i class="dripicons-trash text-danger"></i></a>
+                    </div>
+                    <h3 class="card-title mb-3">`+element.activity.title+`</h3>
+                    <div class="row">
+                        <div class="col-3" style="background-image: url('`+element.details.photos.header[0].paths.grid+`'); background-color: rgba(255, 255, 255, 0); background-blend-mode: overlay; background-position: center center; background-size: cover;">
+                        </div>
+                        <div class="col-9">
+                            <div class="row">
+                                <div class="col-4">
+                                    <span style="font-size: 18px;"><strong>Fecha:</strong></span> 
+                                </div>
+                                <div class="col-8">
+                                    <span style="font-size: 16px;">`+element.date+`</span>
+                                </div>
+                                <div class="col-4">
+                                    <span style="font-size: 18px;"><strong>Hora:</strong></span> 
+                                </div>
+                                <div class="col-8">
+                                    <span style="font-size: 16px;">`+element.time+`</span>
+                                </div>
+                                <div class="col-4">
+                                    <span style="font-size: 18px;"><strong>Tipo:</strong></span> 
+                                </div>
+                                <div class="col-8">
+                                    <span style="font-size: 16px;">`+element.rate.rate+`</span>
+                                </div>`
+                                var precioItem = 0
+                                element.rate.categories.forEach(cat => {
+                                    lista += `
+                                    <div class="col-4">
+                                        <span style="font-size: 18px;"><strong>`+cat.quantity+` `+cat.category+`:</strong></span> 
+                                    </div>
+                                    <div class="col-8 mb-2">
+                                        <span style="font-size: 16px;">$`+parseFloat((cat.totalPrice),10).toFixed(2)+`</span>
+                                    </div>`
+                                    precioItem = precioItem + parseFloat((cat.totalPrice),10)
+                                });
+                                if(element.details.cancelPolicies[0].penalty == 0){
+                                    lista +=`
+                                        <div class="col-8">
+                                            <span style="font-size: 18px;" class="text-success d-flex justify-content-center">Cancelación gratuita hasta `+element.details.cancelPolicies[0].hours+` horas antes de la actividad</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <span style="font-size: 30px;" class="text-success d-flex align-items-end justify-content-end"><strong>$`+precioItem.toFixed(2)+`</strong></span>
+                                        </div>
+                                        `
+                                }
+                                else{
+                                    lista +=`
+                                        <div class="col-12">
+                                            <span style="font-size: 30px;" class="text-success d-flex align-items-end justify-content-end"><strong>$`+precioItem.toFixed(2)+`</strong></span>
+                                        </div>
+                                        `
+                                }
+                                lista +=`
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
+        });
+        $("#listaItems").html(lista)
+        contruirItemsDeDatos(items, carritoId)
+    }
+
+
+
+
+    function contruirItemsDeDatos(items){
+        var lista = ""
+        items.forEach((element, index) => {
+            let id = removerPuntos(element.itemId)
+            let fecha = formatearFecha(element.date)
+            lista += `
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-3" style="background-image: url('`+element.details.photos.header[0].paths.grid+`'); background-color: rgba(255, 255, 255, 0); background-blend-mode: overlay; background-position: center center; background-size: cover; height: 150px;">
+                        </div>
+                        <div class="col-9">
+                            <div class="row">
+                                <h3 class="card-title mb-3">`+element.activity.title+`</h3>
+                                <div class="col-12">
+                                    <span style="font-size: 18px;"><strong>Fecha: </strong>`+fecha+`</span> 
+                                </div>
+                                `
+                                var cantidad = 0
+                                element.rate.categories.forEach(cat => {
+                                    cantidad = cantidad + parseInt(cat.quantity)
+                                });
+                                lista +=`
+                                <div class="col-12">
+                                    <span style="font-size: 16px;">`+element.rate.rate+` | `+cantidad+` personas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3" id="booking`+id+`">
+                        
+                    </div>
+                    <div class="row" id="pasajeros`+id+`">
+                        
+                    </div>
+                </div>
+            </div>
+        `
+        });
+        $("#resumen").html(lista)
+    }
+
+
+
+    function formatearFecha(fecha) {
+        const meses = [
+            "enero", "febrero", "marzo", "abril", "mayo", "junio",
+            "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+        ];
+        const [anio, mes, dia] = fecha.split("-");
+        return `${parseInt(dia)} de ${meses[parseInt(mes) - 1]} del ${anio}`;
+    }
+
+
+
+
+
+    var miArray = [
+        { id: 0, encabezado: "tuPedido", cuerpo: "cuerpoPedido" },
+        { id: 1, encabezado: "datosPersonales", cuerpo: "cuerpoPersonales" },
+        { id: 2, encabezado: "metodoPago", cuerpo: "cuerpoPago" }
+    ];
+
+    function cambiarItem(id){
+        for (let i = 0; i < miArray.length; i++) {
+            if(miArray[i].id == id){
+                let item = document.getElementById(miArray[i].encabezado);
+                item.classList.add('bg-success')
+                item.classList.add('text-light')
+                $("#"+miArray[i].cuerpo).show()
+            }
+            else{
+                let item = document.getElementById(miArray[i].encabezado);
+                item.classList.remove('bg-success')
+                item.classList.remove('text-light')
+                $("#"+miArray[i].cuerpo).hide()
+            }
+        }
+        
+    }
+
+    
+
+
+   
+   
+
+</script>
+

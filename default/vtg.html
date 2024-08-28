@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="en" ng-app="mvevip"></html>
+    <head>
+
+        <meta charset="utf-8" />
+        <title>Marketing Vip | VTG</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+        <meta content="Coderthemes" name="author" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="../assets/images/favicon.ico">
+
+        <!-- Plugins css -->
+        <link href="../assets/css/config/default/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+        <link href="../assets/libs/flatpickr/flatpickr.min.css" rel="stylesheet" type="text/css" />
+        <link href="../assets/libs/selectize/css/selectize.bootstrap3.css" rel="stylesheet" type="text/css" />
+        <link href="../assets/libs/spectrum-colorpicker2/spectrum.min.css" rel="stylesheet" type="text/css">
+        <link href="../assets/libs/clockpicker/bootstrap-clockpicker.min.css" rel="stylesheet" type="text/css" />
+        <link href="../assets/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css" />
+        <link href="../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- App css -->
+        <link href="../assets/css/config/default/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+        <!-- icons -->
+        <link href="../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <script src="https://unpkg.com/feather-icons"></script>
+
+
+
+    </head>
+
+
+    <style>
+        
+        .custom-button {
+            background-color: white; /* Fondo blanco */
+            border: none; /* Borde negro */
+            padding: 8px 12px; /* Ajusta el relleno según tus necesidades */
+            border-radius: 4px; /* Opcional: añade bordes redondeados */
+        }
+        .dropdown-menu {
+            padding: 15px; /* Espacio interno del dropdown */
+            min-width: 250px; /* Ancho mínimo del dropdown */
+        }
+        
+        .dropdown-menu ul {
+            padding: 0;
+            margin: 0;
+            list-style: none; /* Elimina los puntos de la lista */
+        }
+    
+        .li-style {
+            display: grid;
+            grid-template-columns: auto 60px; /* Define dos columnas, una para el texto y otra para el input */
+            align-items: center; /* Alinea verticalmente los elementos */
+            gap: 10px; /* Espacio entre las columnas */
+            margin-bottom: 10px; /* Espacio entre cada fila */
+        }
+    
+        .li-last-style {
+            grid-template-columns: 1fr; /* Una sola columna para centrar el contenido */
+            justify-items: center; /* Centra el contenido horizontalmente */
+        }
+    
+        .dropdown-menu input {
+            width: 60px; /* Ajusta el ancho de los inputs */
+        }
+    
+        .custom-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .small-text {
+            display: block;
+            font-size: 0.6rem; /* Ajusta el tamaño según sea necesario */
+            color: #6c757d;
+            margin-top: 4px; /* Ajusta el espacio entre el texto y el input si es necesario */
+        }
+        .background-container {
+            position: relative;
+            width: 100%;
+            height: 20vh; /* Ajusta la altura según sea necesario */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .title-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        .background-container {
+            position: relative;
+            height: 500px;
+            overflow: visible; /* Oculta cualquier desbordamiento de la imagen */
+        }
+
+        .background-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.8; /* Ajusta la opacidad de la imagen */
+            z-index: -1; /* Coloca el pseudo-elemento detrás del contenido */
+        }        
+       
+    </style>
+
+
+    <!-- body start -->
+    <body class="loading" data-layout-mode="default" data-layout-color="light" data-layout-width="fluid" data-topbar-color="light" data-menu-position="fixed" data-leftbar-color="light" data-leftbar-size='default' data-sidebar-user='false'>
+
+        <!-- Begin page -->
+        <div id="wrapper">
+
+            <!-- Topbar Start -->
+<div class="navbar-custom">
+    <div class="container-fluid">
+        <ul class="list-unstyled topnav-menu float-end mb-0">
+
+            <li class="dropdown notification-list topbar-dropdown">
+                <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                    <span class="pro-user-name ms-1">
+                        <span class="nombre_usuario">Obteniendo nombre...</span> <i class="mdi mdi-chevron-down"></i>
+                    </span>
+                    <img src="../assets/images/users/avatar.png" alt="user-image" class="rounded-circle">
+                    
+                </a>
+                <div class="dropdown-menu dropdown-menu-end profile-dropdown ">
+                    <!-- item-->
+                    <div class="dropdown-header noti-title">
+                        <h6 class="text-overflow m-0 nombre_usuario">Bienvenido</h6>
+                    </div>
+    
+                    <!-- item-->
+                    <a href="#!/micuenta" class="dropdown-item notify-item">
+                        <i class="fe-user"></i>
+                        <span>Mi Cuenta</span>
+                    </a>
+    
+                    <!-- item-->
+                    <a href="#!/configuracion" class="dropdown-item notify-item">
+                        <i class="fe-settings"></i>
+                        <span>Configuracion</span>
+                    </a>
+    
+                    <div class="dropdown-divider"></div>
+    
+                    <!-- item-->
+                    <a href="#" onclick="cerrarSesion('Cerrando la sesión.'); return false;" class="dropdown-item notify-item">
+                        <i class="fe-log-out"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+    
+                </div>
+            </li>  
+    
+        </ul>
+    
+        <!-- LOGO -->
+        <ul class="list-unstyled topnav-menu topnav-menu-left m-0">          
+            <li>
+                <button class="button-menu-mobile waves-effect waves-light">
+                    <i class="fe-menu"></i>
+                </button>
+            </li>  
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+</div>
+<!-- end Topbar -->
+
+            <!-- ========== Left Sidebar Start ========== -->
+            <div class="left-side-menu">
+                <div class="h-100" data-simplebar>
+                    <!--- Sidemenu -->
+                    <div id="sidebar-menu">
+
+                        <ul id="side-menu">
+
+                            <li class="menu-title">Componentes</li>
+
+                            <li>
+                                <a href="#!/vuelos">
+                                    <i class="icon-plane"></i>
+                                    <span> Vuelos </span>
+                                </a>
+                            </li>
+
+                            <li >
+                                <a href="#sidebarActividades" data-bs-toggle="collapse">
+                                    <i class="fas fa-biking"></i>
+                                    <span> Actividades </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarActividades">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="#!/actividades">Reservar</a>
+                                        </li>
+                                        <li>
+                                            <a href="#!/reservasActividad">Mis Reservas</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarTransporte" data-bs-toggle="collapse">
+                                    <i class="fas fa-car"></i>
+                                    <span> Traslados </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarTransporte">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="#!/traslados">Reservar</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-cards.html">Mis Reservas</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarHoteles" data-bs-toggle="collapse">
+                                    <i class="fas fa-building"></i>
+                                    <span> Hoteles </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarHoteles">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="#!/buscador">Reservar</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-cards.html">Mis Reservas</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                           
+                            
+                        </ul>
+
+                    </div>
+                    <!-- End Sidebar -->
+
+                    <div class="clearfix"></div>
+
+                </div>
+                <!-- Sidebar -left -->
+
+            </div>
+            <!-- Left Sidebar End -->
+
+            <!-- ============================================================== -->
+            <!-- Start Page Content here -->
+            <!-- ============================================================== -->
+
+
+
+            <div class="content-page">
+                <div class="content">
+    
+                    <!-- Start Content-->
+                    <div class="container-fluid" ng-view></div> <!-- container -->
+    
+                </div> <!-- content -->
+    
+                <!-- Footer Start -->
+                <footer class="footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <script>document.write(new Date().getFullYear())</script> &copy; <a
+                                    href="https://www.mvevip.com" target="_blank">Marketing VIP</a>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-md-end footer-links d-none d-sm-block">
+                                    <a href="javascript:void(0);">Ayuda</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+                <!-- end Footer -->
+    
+            </div>
+
+        </div>
+        <!-- Right bar overlay-->
+        <div class="rightbar-overlay"></div>
+
+        <!-- Vendor js -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="../assets/js/vendor.min.js"></script>
+
+        
+        <!-- Plugins js-->
+        <script src="../assets/libs/flatpickr/flatpickr.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
+        <script src="https://unpkg.com/moment@2.29.4/min/moment.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+        <script src="../assets/js/routes.js?v=2"></script>
+        <script src="../assets/js/api.js"></script>
+        <script src="../assets/libs/spectrum-colorpicker2/spectrum.min.js"></script>
+        <script src="../assets/libs/clockpicker/bootstrap-clockpicker.min.js"></script>
+        <script src="../assets/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+        <script src="../assets/libs/selectize/js/standalone/selectize.min.js"></script>
+        <script src="../assets/libs/footable/footable.all.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        
+
+        <!-- Init js-->
+        <script src="../assets/js/pages/form-pickers.init.js"></script>
+        <script src="../assets/js/pages/foo-tables.init.js"></script>
+
+        <!-- App js-->
+        <script src="../assets/js/app.min.js"></script>
+        <script src="../login.js?v=2"></script>
+
+
+        <script>
+
+            $(document).ready(e => {
+                setInterval(function() {
+                    session();
+                    var usuario = localStorage.getItem('nombreUsuario'); 
+                    $(".nombre_usuario").html(usuario)
+                }, 10000);
+            })
+       
+        </script>
+
+        
+    </body>
+</html>
